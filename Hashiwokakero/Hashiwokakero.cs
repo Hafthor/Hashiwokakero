@@ -73,19 +73,6 @@ public class Hashiwokakero {
         }
         return 1;
     }
-
-    private HashSet<Island> Network(params Island[] islands) {
-        HashSet<Island> toVisit = new(islands), visited = new();
-        while (toVisit.Any()) {
-            var island = toVisit.First();
-            toVisit.Remove(island);
-            visited.Add(island);
-            foreach (var other in island.ConnectedIslands())
-                if (!visited.Contains(other))
-                    toVisit.Add(other);
-        }
-        return visited;
-    }
     
     private Island FindNearestIsland(Island from, Coord direction) {
         return islands
@@ -141,7 +128,7 @@ public class Hashiwokakero {
         return false;
     }
 
-    public void Print() {
+    public string Solution() {
         var grid = new char[height][];
         // initialize grid
         for (int y = 0; y < height; y++) {
@@ -165,10 +152,10 @@ public class Hashiwokakero {
                     grid[tl.y][x] = grid[tl.y][x] == ' ' ? c : '?';
             }
         }
-        // print grid
-        for (int y = 0; y < height; y++) 
-            Console.WriteLine(grid[y]);
+        return string.Join('\n', grid.Select(line => new string(line)));
     }
+    
+    public void Print() => Console.WriteLine(Solution());
 
     public record Coord(int x, int y) {
         public readonly int x = x, y = y;
@@ -200,10 +187,6 @@ public class Hashiwokakero {
 
         public IEnumerable<Bridge> FreeBridges() => Bridges().Where(b => !b.AnyInterfering && b.MaxPossible > 0);
 
-        public IEnumerable<Island> ConnectedIslands() {
-            return Bridges().Where(b => b.MinPossible > 0 || b.value > 0).Select(b => b.OtherIsland(this));
-        }
-
         public int Count() => Bridges().Select(b => b.value).Sum();
         
         public override string ToString() => $"Island({coord.x}, {coord.y}, {value})";
@@ -221,7 +204,6 @@ public class Hashiwokakero {
 
         public bool AnyInterfering => interfering.Any(b => b.value > 0);
         public bool IsVertical => tl.coord.x == br.coord.x;
-        public bool IsHorizontal => tl.coord.y == br.coord.y;
 
         public Bridge(Island a, Island b) {
             (tl, br) = a.coord.x < b.coord.x || a.coord.y < b.coord.y ? (a, b) : (b, a);

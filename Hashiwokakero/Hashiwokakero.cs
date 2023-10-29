@@ -14,7 +14,7 @@ public class Hashiwokakero {
         // set islands
         for (int y = 0; y < height; y++)
             for (int x = 0; x < width; x++)
-                if (char.IsDigit(lines[y][x]))
+                if (char.IsDigit(lines[y][x]) && lines[y][x] != '0' && lines[y][x] != '9')
                     islands.Add(new Island(new Coord(x, y), lines[y][x] - '0'));
 
         // build all possible bridges to a value of 0
@@ -73,7 +73,7 @@ public class Hashiwokakero {
         }
         return 1;
     }
-    
+
     private Island FindNearestIsland(Island from, Coord direction) {
         return islands
             .Where(i => Math.Sign(i.coord.x - from.coord.x) == direction.x && Math.Sign(i.coord.y - from.coord.y) == direction.y)
@@ -94,7 +94,7 @@ public class Hashiwokakero {
     private bool Solve(Bridge bridge) {
         if (bridge.tl.value == bridge.tl.Count() || bridge.br.value == bridge.br.Count()) // if either island solved
             return bridge.SetCount(bridge.MinPossible);
-        
+
         // do some more smart stuff here
         return false;
     }
@@ -119,7 +119,7 @@ public class Hashiwokakero {
                 didSomething |= bridge.SetMinMaxCount(1, 2);
             return didSomething;
         }
-        
+
         var availableBridges = freeBridges.Where(b => b.MaxPossible > b.MinPossible).ToList();
         if (availableBridges.Count == 1)
             return availableBridges[0].SetMinMaxCount(remaining, 2);
@@ -144,17 +144,19 @@ public class Hashiwokakero {
             Coord tl = bridge.tl.coord, br = bridge.br.coord;
             if (bridge.IsVertical) {
                 var c = bridge.value switch { 1 => VERT_ONE, 2 => VERT_TWO, _ => ' ' };
-                for (int y = tl.y + 1; y < br.y; y++)
-                    grid[y][tl.x] = grid[y][tl.x] == ' ' ? c : '?';
+                if (c != ' ')
+                    for (int y = tl.y + 1; y < br.y; y++)
+                        grid[y][tl.x] = grid[y][tl.x] == ' ' ? c : '?';
             } else {
                 var c = bridge.value switch { 1 => HORZ_ONE, 2 => HORZ_TWO, _ => ' ' };
-                for (int x = tl.x + 1; x < br.x; x++)
-                    grid[tl.y][x] = grid[tl.y][x] == ' ' ? c : '?';
+                if (c != ' ')
+                    for (int x = tl.x + 1; x < br.x; x++)
+                        grid[tl.y][x] = grid[tl.y][x] == ' ' ? c : '?';
             }
         }
         return string.Join('\n', grid.Select(line => new string(line)));
     }
-    
+
     public void Print() => Console.WriteLine(Solution());
 
     public record Coord(int x, int y) {
@@ -188,7 +190,7 @@ public class Hashiwokakero {
         public IEnumerable<Bridge> FreeBridges() => Bridges().Where(b => !b.AnyInterfering && b.MaxPossible > 0);
 
         public int Count() => Bridges().Select(b => b.value).Sum();
-        
+
         public override string ToString() => $"Island({coord.x}, {coord.y}, {value})";
     }
 
@@ -214,7 +216,7 @@ public class Hashiwokakero {
             if (c > maxPossible || c < minPossible) throw new Exception("invalid count");
             var didSomething = value != c || minPossible != c || maxPossible != c;
             value = minPossible = maxPossible = c;
-            //if (didSomething) Console.WriteLine("SetCount: " + this);
+            // if (didSomething) Console.WriteLine("SetCount: " + this);
             return didSomething;
         }
 
@@ -224,7 +226,7 @@ public class Hashiwokakero {
             var didSomething = min != minPossible || max != maxPossible;
             value = minPossible = newMin;
             maxPossible = newMax;
-            //if (didSomething) Console.WriteLine("SetMinMaxCount: " + this);
+            // if (didSomething) Console.WriteLine("SetMinMaxCount: " + this);
             return didSomething;
         }
 

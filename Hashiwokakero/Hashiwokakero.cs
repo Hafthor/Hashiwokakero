@@ -142,17 +142,19 @@ public class Hashiwokakero {
         // set bridges
         foreach (var bridge in bridges) {
             Coord tl = bridge.tl.coord, br = bridge.br.coord;
+            char c;
+            Rect r;
             if (bridge.IsVertical) {
-                var c = bridge.value switch { 1 => VERT_ONE, 2 => VERT_TWO, _ => ' ' };
-                if (c != ' ')
-                    for (int y = tl.y + 1; y < br.y; y++)
-                        grid[y][tl.x] = grid[y][tl.x] == ' ' ? c : '?';
+                c = bridge.value switch { 1 => VERT_ONE, 2 => VERT_TWO, _ => ' ' };
+                r = new Rect(new Coord(tl.x, tl.y + 1), new Coord(br.x, br.y - 1));
             } else {
-                var c = bridge.value switch { 1 => HORZ_ONE, 2 => HORZ_TWO, _ => ' ' };
-                if (c != ' ')
-                    for (int x = tl.x + 1; x < br.x; x++)
-                        grid[tl.y][x] = grid[tl.y][x] == ' ' ? c : '?';
+                c = bridge.value switch { 1 => HORZ_ONE, 2 => HORZ_TWO, _ => ' ' };
+                r = new Rect(new Coord(tl.x + 1, tl.y), new Coord(br.x - 1, br.y));
             }
+            if (c != ' ')
+                for (int y = r.tl.y; y <= r.br.y; y++)
+                    for (int x = r.tl.x; x <= r.br.x; x++)
+                        grid[y][x] = grid[y][x] == ' ' ? c : '?';
         }
         return string.Join('\n', grid.Select(line => new string(line)));
     }
